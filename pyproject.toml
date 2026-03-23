@@ -22,3 +22,6 @@ mjcloud = "mjcloud.cli:cli"
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
+
+[tool.setuptools.packages.find]
+include = ["mjcloud*"]
