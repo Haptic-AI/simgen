@@ -1,10 +1,10 @@
 # MuJoCo Cloud
 
-One-click GPU simulation environments for MuJoCo. Deploy a ready-to-go robotics simulation box in one command.
+One-click GPU simulation environments for MuJoCo on Azure. Deploy a ready-to-go robotics simulation box in one command.
 
 ```bash
 pip install -e .
-mjcloud config --project my-gcp-project
+mjcloud config --subscription YOUR_SUB_ID --resource-group YOUR_RG
 mjcloud deploy
 # 2 minutes later: GPU instance running with MuJoCo, Jupyter, and examples ready
 ```
@@ -13,17 +13,17 @@ mjcloud deploy
 
 ## What We Built
 
-There is no "one-click MuJoCo deployment" on any major cloud provider. We searched Google Cloud, AWS, and Azure marketplaces — nothing exists. Researchers who want GPU-accelerated MuJoCo simulation today face a multi-hour setup gauntlet: provision a VM, install NVIDIA drivers, fight with CUDA versions, install MuJoCo, configure JAX for GPU, set up Jupyter, open firewall ports, and hope nothing breaks.
+There is no "one-click MuJoCo deployment" on any major cloud provider. We searched AWS, Azure, and GCP marketplaces — nothing exists. Researchers who want GPU-accelerated MuJoCo simulation today face a multi-hour setup gauntlet: provision a VM, install NVIDIA drivers, fight with CUDA versions, install MuJoCo, configure JAX for GPU, set up Jupyter, open firewall ports, and hope nothing breaks.
 
 **mjcloud** eliminates all of that. It's a single CLI tool that:
 
-1. Spins up an NVIDIA L4 GPU instance on Google Cloud
+1. Spins up a GPU VM on Azure (T4, A100, or H100)
 2. Automatically installs the entire MuJoCo + MJX + JAX + CUDA stack
 3. Starts Jupyter Lab on port 8888
 4. Pre-loads example scripts and Google DeepMind's MuJoCo Playground
 5. Gives you SSH and Jupyter access in one command
 
-The whole tool is ~600 lines of Python across 4 files. It uses the GCP Compute Engine API directly — no Terraform, no Docker, no Kubernetes. Just `mjcloud deploy` and you're simulating.
+The whole tool is ~600 lines of Python across 4 files. It uses the Azure Compute API directly — no Terraform, no Docker, no Kubernetes. Just `mjcloud deploy` and you're simulating.
 
 ### Project Structure
 
@@ -33,11 +33,11 @@ mujoco-cloud/
 ├── mjcloud/
 │   ├── cli.py                  # Click CLI with rich output
 │   ├── config.py               # Instance presets and user config
-│   ├── gcp.py                  # GCP Compute Engine API wrapper
+│   ├── azure.py                # Azure Compute API wrapper
 │   └── startup_script.sh       # VM provisioning (drivers, CUDA, MuJoCo, Jupyter)
 └── examples/
     ├── humanoid_walk.py        # CPU vs GPU single-env benchmark
-    └── batched_humanoid_mjx.py # 1024 parallel envs on L4 — the real showcase
+    └── batched_humanoid_mjx.py # 1024 parallel envs on GPU — the real showcase
 ```
 
 ---
@@ -66,7 +66,7 @@ This setup typically takes **2-4 hours** for someone experienced. For a student 
 mjcloud deploy    # done in 2 minutes. everything works.
 ```
 
-A researcher can go from "I want to train a locomotion policy" to "I have 1024 parallel MuJoCo humanoids running on an L4 GPU" in under 10 minutes. No driver debugging. No CUDA version mismatches. No firewall configuration.
+A researcher can go from "I want to train a locomotion policy" to "I have 1024 parallel MuJoCo humanoids running on an Azure GPU VM" in under 10 minutes. No driver debugging. No CUDA version mismatches. No firewall configuration.
 
 ### Who this is for
 
@@ -82,28 +82,32 @@ A researcher can go from "I want to train a locomotion policy" to "I have 1024 p
 
 ### Prerequisites
 
-1. A Google Cloud account with billing enabled
-2. GPU quota for L4 instances (most projects have this by default)
+1. **Create an Azure account** at [portal.azure.com](https://portal.azure.com) with billing enabled
+2. **Create a Subscription and Resource Group**
+   - In the Azure Portal, go to **Subscriptions** and note your **Subscription ID**
+   - Go to **Resource Groups** → **Create** and create a new resource group (e.g., `mujoco-rg`) in your preferred region
+3. **Procure a GPU VM** — request quota for one of the following GPU SKUs in your region:
+   - **NVIDIA T4** (NC4as T4 v3 series) — budget option for development and small experiments
+   - **NVIDIA A100** (ND A100 v4 series) — high-performance training and large-scale simulation
+   - **NVIDIA H100** (ND H100 v5 series) — maximum throughput for production RL training
 
 ### Setup (< 5 minutes)
 
 ```bash
-# Install gcloud CLI (if you don't have it)
-brew install --cask google-cloud-sdk
+# Install Azure CLI (if you don't have it)
+brew install azure-cli
 
 # Authenticate
-gcloud auth login
-gcloud auth application-default login
-gcloud config set project YOUR_PROJECT_ID
+az login
 
 # Clone and install mjcloud
-git clone https://github.com/Haptic-AI/sandbox-chris.git
-cd sandbox-chris
+git clone https://github.com/Haptic-AI/one-click-mujocu-azure.git
+cd one-click-mujocu-azure
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 
 # Configure
-mjcloud config --project YOUR_PROJECT_ID
+mjcloud config --subscription YOUR_SUB_ID --resource-group YOUR_RG
 
 # Deploy
 mjcloud deploy
@@ -117,7 +121,7 @@ That's it. You'll see output like:
 ║                                                                              ║
 ║ Instance:  mjcloud-haptic-01                                                 ║
 ║ IP:        34.134.219.151                                                    ║
-║ Machine:   g2-standard-8                                                     ║
+║ VM Size:   Standard_NC4as_T4_v3                                              ║
 ║ Status:    RUNNING                                                           ║
 ║                                                                              ║
 ║ SSH:       mjcloud ssh mjcloud-haptic-01                                     ║
@@ -127,11 +131,11 @@ That's it. You'll see output like:
 
 ### Instance Presets
 
-| Preset | Machine | GPU | RAM | Cost |
+| Preset | VM Size | GPU | RAM | Cost |
 |--------|---------|-----|-----|------|
-| `small` | g2-standard-4 | 1x NVIDIA L4 | 16GB | ~$0.70/hr |
-| `medium` | g2-standard-8 | 1x NVIDIA L4 | 32GB | ~$0.98/hr |
-| `large` | g2-standard-16 | 1x NVIDIA L4 | 64GB | ~$1.53/hr |
+| `small` | Standard_NC4as_T4_v3 | 1x NVIDIA T4 | 28GB | ~$0.53/hr |
+| `medium` | Standard_NC24ads_A100_v4 | 1x NVIDIA A100 | 220GB | ~$3.67/hr |
+| `large` | Standard_ND96isr_H100_v5 | 8x NVIDIA H100 | 1900GB | ~$32.77/hr |
 
 ```bash
 mjcloud deploy --preset small          # budget option
@@ -189,12 +193,12 @@ jit_step = jax.jit(mjx.step)
 
 for _ in range(10000):
     mjx_data = jit_step(mjx_model, mjx_data)
-# ~500K steps/sec on L4
+# ~500K steps/sec on GPU
 ```
 
 ### 3. Batched Parallel Environments (the real power)
 
-Run 1024+ environments simultaneously on the L4 — this is what makes GPU simulation transformative for RL training:
+Run 1024+ environments simultaneously on GPU — this is what makes GPU simulation transformative for RL training:
 
 ```python
 import jax
@@ -202,7 +206,7 @@ from mujoco import mjx
 
 # Vectorize across 1024 parallel worlds
 batched_step = jax.vmap(mjx.step, in_axes=(None, 0))
-# ~50M+ steps/sec across all envs on L4
+# ~50M+ steps/sec across all envs on GPU
 ```
 
 ### 4. RL Training with Gymnasium
@@ -255,7 +259,7 @@ python /opt/mjcloud/examples/humanoid_walk.py
 
 Expect: CPU ~50K steps/sec, GPU ~500K steps/sec (10x speedup for single env).
 
-### `batched_humanoid_mjx.py` — The L4 Showcase
+### `batched_humanoid_mjx.py` — The GPU Showcase
 
 This is the example that demonstrates why you want a GPU for MuJoCo. It runs **1024 humanoid simulations in parallel** using `jax.vmap` over MJX, with a simple locomotion reward function:
 
@@ -264,14 +268,14 @@ python /opt/mjcloud/examples/batched_humanoid_mjx.py
 ```
 
 What it does:
-- Creates 1024 parallel humanoid environments on the L4 GPU
+- Creates 1024 parallel humanoid environments on the GPU
 - Each env gets slightly different initial conditions
 - Runs 1000-step rollouts with random actions
 - Computes locomotion rewards (height + forward velocity - control cost)
 - Benchmarks at 64, 256, and 1024 parallel envs
 - Prints estimated training times: how long it would take to collect 1B env steps on this GPU vs a single CPU core
 
-Expected output on L4:
+Expected output on T4:
 ```
 Batched MJX Benchmark
 ============================================================
@@ -281,7 +285,7 @@ Total steps:     1,024,000
 Throughput:      ~30,000,000+ steps/sec
 
 Training time estimate (1B steps):
-  This L4 GPU:   ~0.5 hours
+  This GPU:      ~0.5 hours
   Single CPU:    5,556 hours (231 days)
   Speedup:       ~10,000x
 ```
@@ -312,20 +316,20 @@ Config lives at `~/.mjcloud/config.yaml`. Override with env vars:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `MJCLOUD_PROJECT` | GCP project ID | — |
-| `GOOGLE_CLOUD_PROJECT` | GCP project ID (fallback) | — |
-| `MJCLOUD_ZONE` | Default zone | `us-central1-a` |
+| `MJCLOUD_SUBSCRIPTION` | Azure Subscription ID | — |
+| `MJCLOUD_RESOURCE_GROUP` | Azure Resource Group | — |
+| `MJCLOUD_REGION` | Default Azure region | `westus2` |
 
 ---
 
 ## How It Works Under the Hood
 
-1. `mjcloud deploy` calls the GCP Compute Engine API to create a `g2-standard-8` instance with an NVIDIA L4 GPU
-2. A startup script (`startup_script.sh`) runs on first boot via GCE metadata
+1. `mjcloud deploy` calls the Azure Compute API to create a GPU VM (T4, A100, or H100) in your resource group
+2. A startup script (`startup_script.sh`) runs on first boot via Azure custom script extension
 3. The script installs NVIDIA drivers, CUDA 12.2, creates a Python venv, and installs the full MuJoCo + JAX + Jupyter stack
 4. Jupyter Lab starts as a systemd service on port 8888
-5. A GCP firewall rule (`mjcloud-allow-jupyter`) is automatically created to allow traffic on port 8888
-6. All instances are labeled `mjcloud=true` so `mjcloud list` can find them
+5. An Azure NSG rule (`mjcloud-allow-jupyter`) is automatically created to allow traffic on port 8888
+6. All instances are tagged `mjcloud=true` so `mjcloud list` can find them
 
 Setup takes ~5-10 minutes after boot. Monitor progress:
 
@@ -339,14 +343,14 @@ tail -f /var/log/mjcloud-setup.log
 ## Roadmap
 
 - [ ] AWS support (EC2 G5/G6 instances with L4 GPUs)
-- [ ] Azure support (NC-series VMs)
+- [ ] GCP support (g2-standard instances with L4 GPUs)
 - [ ] Pre-built VM images for instant boot (skip the 5-min install)
 - [ ] Docker-based deployments
 - [ ] Web dashboard for instance management
 - [ ] Auto-shutdown timers to prevent runaway costs
 - [ ] Team workspaces and shared instances
 - [ ] Custom startup scripts and model uploads
-- [ ] Spot/preemptible instances for cheaper training runs
+- [ ] Spot/low-priority instances for cheaper training runs
 
 ## License
 
