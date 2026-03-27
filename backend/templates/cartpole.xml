@@ -1,0 +1,42 @@
+<mujoco model="cartpole">
+  <option gravity="0 0 -{{gravity}}" timestep="{{timestep}}"/>
+
+  <visual>
+    <global offwidth="640" offheight="480"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.05 0.07 0.1" rgb2="0.15 0.18 0.22" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.15 0.15 0.15" rgb2="0.2 0.2 0.2" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="8 8" reflectance="0.1"/>
+  </asset>
+
+  <worldbody>
+    <light directional="true" diffuse="0.8 0.8 0.9" specular="0.3 0.3 0.3" pos="0 -2 3" dir="0 1 -1" castshadow="true"/>
+    <light directional="true" diffuse="0.3 0.3 0.4" pos="2 2 2" dir="-1 -1 -0.5" castshadow="false"/>
+
+    <geom name="floor" type="plane" size="5 5 0.1" material="grid"/>
+
+    <!-- Rail -->
+    <geom type="capsule" fromto="-2 0 0.5 2 0 0.5" size="0.02" rgba="0.4 0.4 0.4 1"/>
+
+    <camera name="main" pos="0 -3.5 2" xyaxes="1 0 0 0 0.4 1" fovy="45"/>
+
+    <!-- Cart -->
+    <body name="cart" pos="0 0 0.5">
+      <joint name="cart_slide" type="slide" axis="1 0 0" damping="0.1"/>
+      <geom type="box" size="0.2 0.15 0.08" mass="{{cart_mass}}" rgba="0.3 0.5 0.8 1"/>
+
+      <!-- Pole -->
+      <body name="pole" pos="0 0 0.08">
+        <joint name="pole_hinge" type="hinge" axis="0 1 0" damping="0.01"/>
+        <geom type="capsule" fromto="0 0 0 0 0 {{pole_length}}" size="0.025" rgba="0.8 0.6 0.2 1"/>
+        <geom type="sphere" size="0.04" pos="0 0 {{pole_length}}" rgba="0.9 0.3 0.2 1"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="cart_force" joint="cart_slide" ctrlrange="-20 20"/>
+  </actuator>
+</mujoco>

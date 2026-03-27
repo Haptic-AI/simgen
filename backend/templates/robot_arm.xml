@@ -1,0 +1,52 @@
+<mujoco model="robot_arm">
+  <option gravity="0 0 -9.81" timestep="{{timestep}}"/>
+
+  <visual>
+    <global offwidth="640" offheight="480"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.05 0.07 0.1" rgb2="0.15 0.18 0.22" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.15 0.15 0.15" rgb2="0.2 0.2 0.2" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="8 8" reflectance="0.1"/>
+  </asset>
+
+  <worldbody>
+    <light directional="true" diffuse="0.8 0.8 0.9" specular="0.3 0.3 0.3" pos="1 -2 3" dir="-0.3 1 -1" castshadow="true"/>
+    <light directional="true" diffuse="0.3 0.3 0.4" pos="-2 2 2" dir="1 -1 -0.5" castshadow="false"/>
+
+    <geom name="floor" type="plane" size="5 5 0.1" material="grid"/>
+
+    <camera name="main" pos="0 -2.5 2" xyaxes="1 0 0 0 0.5 1" fovy="45"/>
+
+    <!-- Target marker -->
+    <geom name="target" type="sphere" size="0.06" rgba="0.2 0.9 0.3 0.6" pos="0.7 0 1.5"/>
+
+    <!-- Base -->
+    <body name="base" pos="0 0 0.5">
+      <geom type="cylinder" size="0.15 0.25" rgba="0.3 0.3 0.35 1"/>
+
+      <!-- Link 1 -->
+      <body name="link1" pos="0 0 0.25">
+        <joint name="shoulder" type="hinge" axis="0 1 0" damping="{{damping}}" stiffness="{{stiffness}}" springref="{{target_angle}}"/>
+        <geom type="capsule" fromto="0 0 0 0 0 0.6" size="0.04" rgba="0.4 0.5 0.8 1"/>
+
+        <!-- Link 2 -->
+        <body name="link2" pos="0 0 0.6">
+          <joint name="elbow" type="hinge" axis="0 1 0" damping="{{damping}}" stiffness="{{stiffness}}"/>
+          <geom type="capsule" fromto="0 0 0 0 0 0.5" size="0.035" rgba="0.5 0.6 0.9 1"/>
+
+          <!-- End effector -->
+          <body name="end_effector" pos="0 0 0.5">
+            <geom type="sphere" size="0.05" rgba="0.9 0.4 0.2 1"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="shoulder_act" joint="shoulder" kp="{{stiffness}}" ctrlrange="-3.14 3.14"/>
+    <position name="elbow_act" joint="elbow" kp="{{stiffness}}" ctrlrange="-3.14 3.14"/>
+  </actuator>
+</mujoco>

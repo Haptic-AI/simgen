@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mjsim-backend"
+version = "0.1.0"
+description = "Prompt-to-MuJoCo simulation backend"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "mujoco>=3.0",
+    "numpy",
+    "Pillow",
+    "anthropic",
+    "imageio[pyav]",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
