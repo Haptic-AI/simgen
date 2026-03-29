@@ -13,7 +13,7 @@ TEMPLATE_SCHEMAS = {
             "initial_angle": {"min": -3.14, "max": 3.14, "default": 1.57, "unit": "radians"},
             "gravity": {"min": 0.5, "max": 30.0, "default": 9.81, "unit": "m/s^2"},
         },
-        "sim_duration": 15.0,
+        "sim_duration": 10.0,
         "timestep": 0.002,
     },
     "bouncing_ball": {
@@ -24,7 +24,7 @@ TEMPLATE_SCHEMAS = {
             "ball_size": {"min": 0.05, "max": 0.5, "default": 0.1, "unit": "meters"},
             "gravity": {"min": 0.5, "max": 30.0, "default": 9.81, "unit": "m/s^2"},
         },
-        "sim_duration": 15.0,
+        "sim_duration": 10.0,
         "timestep": 0.002,
     },
     "robot_arm": {
@@ -35,7 +35,7 @@ TEMPLATE_SCHEMAS = {
             "target_angle": {"min": -2.0, "max": 2.0, "default": 1.0, "unit": "radians"},
             "speed": {"min": 0.5, "max": 5.0, "default": 1.0, "unit": "multiplier"},
         },
-        "sim_duration": 15.0,
+        "sim_duration": 10.0,
         "timestep": 0.002,
     },
     "cartpole": {
@@ -46,7 +46,7 @@ TEMPLATE_SCHEMAS = {
             "initial_angle": {"min": -0.5, "max": 0.5, "default": 0.1, "unit": "radians"},
             "gravity": {"min": 0.5, "max": 30.0, "default": 9.81, "unit": "m/s^2"},
         },
-        "sim_duration": 15.0,
+        "sim_duration": 10.0,
         "timestep": 0.002,
     },
     "humanoid": {
@@ -57,7 +57,7 @@ TEMPLATE_SCHEMAS = {
             "gravity": {"min": 0.5, "max": 30.0, "default": 9.81, "unit": "m/s^2"},
             "damping": {"min": 0.0, "max": 5.0, "default": 0.5, "unit": "Ns/m"},
         },
-        "sim_duration": 15.0,
+        "sim_duration": 10.0,
         "timestep": 0.002,
     },
 }
