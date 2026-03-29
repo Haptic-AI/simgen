@@ -34,7 +34,7 @@ def _apply_params(xml: str, params: dict, timestep: float) -> str:
     return xml
 
 
-def render_simulation(template_name: str, params: dict, sim_id: str, use_policy: str = None) -> str:
+def render_simulation(template_name: str, params: dict, sim_id: str, use_policy: str = None, theme: str = "studio") -> str:
     """
     Render a simulation to MP4.
 
@@ -52,7 +52,7 @@ def render_simulation(template_name: str, params: dict, sim_id: str, use_policy:
     # If a locomotion policy is requested, try GPU server first, then local
     if use_policy:
         try:
-            _render_on_gpu_server(use_policy, params, output_path)
+            _render_on_gpu_server(use_policy, params, output_path, theme=theme)
             return output_path
         except Exception as e1:
             print(f"GPU server rendering failed ({e1}), trying local...")
@@ -146,7 +146,7 @@ def _render_with_policy(policy_name: str, params: dict) -> list:
     return frames
 
 
-def _render_on_gpu_server(policy_name: str, params: dict, output_path: str):
+def _render_on_gpu_server(policy_name: str, params: dict, output_path: str, theme: str = "studio"):
     """Send locomotion render request to the H100 GPU server."""
     import json
     import urllib.request
@@ -156,10 +156,11 @@ def _render_on_gpu_server(policy_name: str, params: dict, output_path: str):
     req_data = json.dumps({
         "policy_name": policy_name,
         "params": params,
-        "duration": 15.0,
+        "duration": 10.0,
         "fps": FPS,
         "width": WIDTH,
         "height": HEIGHT,
+        "theme": theme,
     }).encode()
 
     req = urllib.request.Request(

@@ -6,6 +6,7 @@ import SimulationGrid from "@/components/simulation-grid";
 import StatsPanel from "@/components/stats-panel";
 import EnvironmentSelector from "@/components/environment-selector";
 import HistorySidebar from "@/components/history-sidebar";
+import ThemeSelector from "@/components/theme-selector";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -49,6 +50,8 @@ export default function Home() {
   const [showStats, setShowStats] = useState(false);
   const [environment, setEnvironment] = useState("earth");
   const [environments, setEnvironments] = useState<Record<string, Environment>>({});
+  const [theme, setTheme] = useState("studio");
+  const [themes, setThemes] = useState<Record<string, { label: string; description: string }>>({});
   const [flowMode, setFlowMode] = useState(false);
   const [promptChain, setPromptChain] = useState<string[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -67,6 +70,10 @@ export default function Home() {
       .then((r) => r.json())
       .then(setEnvironments)
       .catch(() => {});
+    fetch(`${API_URL}/themes`)
+      .then((r) => r.json())
+      .then(setThemes)
+      .catch(() => {});
   }, [fetchStats]);
 
   // Scroll to top when new generation arrives
@@ -84,7 +91,7 @@ export default function Home() {
       const res = await fetch(`${API_URL}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, environment }),
+        body: JSON.stringify({ prompt, environment, theme }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -349,15 +356,22 @@ export default function Home() {
       </div>
 
       <div className="border-t border-gray-800 px-6 py-4 space-y-3">
-        {Object.keys(environments).length > 0 && (
-          <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto space-y-2">
+          {Object.keys(environments).length > 0 && (
             <EnvironmentSelector
               environments={environments}
               selected={environment}
               onSelect={setEnvironment}
             />
-          </div>
-        )}
+          )}
+          {Object.keys(themes).length > 0 && (
+            <ThemeSelector
+              themes={themes}
+              selected={theme}
+              onSelect={setTheme}
+            />
+          )}
+        </div>
         <PromptInput
           onSubmit={flowMode && generations.length > 0
             ? (prompt) => {

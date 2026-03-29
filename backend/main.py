@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from backend.db import init_db, save_generation, save_simulation, save_rating, get_simulation, get_stats
 from backend.environments import ENVIRONMENTS
+from backend.visual_themes import THEMES
 from backend.locomotion import has_locomotion_policy
 from backend.prompt_parser import parse_prompt
 from backend.renderer import render_simulation
@@ -31,6 +32,7 @@ def startup():
 class GenerateRequest(BaseModel):
     prompt: str
     environment: str = "earth"
+    theme: str = "studio"
 
 
 class VaryRequest(BaseModel):
@@ -75,7 +77,7 @@ def generate(req: GenerateRequest):
         params = variation["params"]
 
         try:
-            video_path = render_simulation(template, params, sim_id, use_policy=policy_name)
+            video_path = render_simulation(template, params, sim_id, use_policy=policy_name, theme=req.theme)
         except Exception as e:
             raise HTTPException(
                 status_code=500,
@@ -238,6 +240,15 @@ def list_environments():
     return {
         key: {"label": env["label"], "description": env["description"], "gravity": env["gravity"]}
         for key, env in ENVIRONMENTS.items()
+    }
+
+
+@app.get("/themes")
+def list_themes():
+    """List available visual themes."""
+    return {
+        key: {"label": t["label"], "description": t["description"]}
+        for key, t in THEMES.items()
     }
 
 
