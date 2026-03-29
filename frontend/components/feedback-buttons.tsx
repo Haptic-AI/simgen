@@ -5,9 +5,10 @@ import { useState } from "react";
 interface Props {
   simulationId: string;
   apiUrl: string;
+  onFeedback?: () => void;
 }
 
-export default function FeedbackButtons({ simulationId, apiUrl }: Props) {
+export default function FeedbackButtons({ simulationId, apiUrl, onFeedback }: Props) {
   const [rating, setRating] = useState<"up" | "down" | null>(null);
 
   const handleFeedback = async (value: "up" | "down") => {
@@ -20,6 +21,7 @@ export default function FeedbackButtons({ simulationId, apiUrl }: Props) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ simulation_id: simulationId, rating: newRating }),
         });
+        onFeedback?.();
       } catch {
         // Silent fail for feedback
       }

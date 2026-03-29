@@ -1,6 +1,8 @@
-# mjsim
+# SimGen
 
-Prompt-to-physics simulation. Describe a scenario in plain English, get 4 MuJoCo simulation videos back — Midjourney style.
+**Midjourney = dream without limits. SimGen = discover what's beautiful within the limits of reality.**
+
+Describe a scene in plain English. Get 4 physics simulations back. Iterate until it's perfect. Every like and dislike teaches the system your creative style — grounded in the real laws of physics.
 
 ## Architecture
 

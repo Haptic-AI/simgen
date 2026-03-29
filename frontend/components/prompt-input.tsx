@@ -5,9 +5,10 @@ import { useState, KeyboardEvent } from "react";
 interface Props {
   onSubmit: (prompt: string) => void;
   loading: boolean;
+  placeholder?: string;
 }
 
-export default function PromptInput({ onSubmit, loading }: Props) {
+export default function PromptInput({ onSubmit, loading, placeholder }: Props) {
   const [prompt, setPrompt] = useState("");
 
   const handleSubmit = () => {
@@ -31,7 +32,7 @@ export default function PromptInput({ onSubmit, loading }: Props) {
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Describe a physics simulation..."
+        placeholder={placeholder || "Describe a scene..."}
         disabled={loading}
         className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 text-sm"
       />
