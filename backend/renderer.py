@@ -147,10 +147,8 @@ def _render_with_policy(policy_name: str, params: dict) -> list:
 
 
 def _render_on_gpu_server(policy_name: str, params: dict, output_path: str, theme: str = "studio"):
-    """Send locomotion render request to the H100 GPU server."""
+    """Send locomotion render request to the H100 GPU server via curl."""
     import json
-    import urllib.request
-    import urllib.error
 
     gpu_url = os.environ.get("GPU_RENDER_URL", "http://localhost:8100")
     req_data = json.dumps({
@@ -161,20 +159,29 @@ def _render_on_gpu_server(policy_name: str, params: dict, output_path: str, them
         "width": WIDTH,
         "height": HEIGHT,
         "theme": theme,
-    }).encode()
+    })
 
-    req = urllib.request.Request(
-        f"{gpu_url}/render",
-        data=req_data,
-        headers={"Content-Type": "application/json"},
+    result = subprocess.run(
+        [
+            "curl", "-s", "-f",
+            "--max-time", "180",
+            "--connect-timeout", "10",
+            "-X", "POST",
+            f"{gpu_url}/render",
+            "-H", "Content-Type: application/json",
+            "-d", req_data,
+            "-o", output_path,
+        ],
+        capture_output=True,
+        timeout=200,
     )
 
-    try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            with open(output_path, "wb") as f:
-                f.write(resp.read())
-    except urllib.error.URLError as e:
-        raise RuntimeError(f"GPU server unreachable: {e}")
+    if result.returncode != 0:
+        stderr = result.stderr.decode()
+        raise RuntimeError(f"GPU render failed (curl exit {result.returncode}): {stderr}")
+
+    if not os.path.exists(output_path) or os.path.getsize(output_path) < 1000:
+        raise RuntimeError("GPU render produced empty or invalid file")
 
 
 def _render_passive(template_name: str, params: dict) -> list:
