@@ -212,6 +212,26 @@ def reject_all(req: RejectAllRequest):
     return {"success": True, "message": "All variations rejected — the system will learn from this."}
 
 
+@app.get("/history")
+def history(limit: int = 50):
+    """Return past prompts with their ratings for the sidebar."""
+    from backend.db import get_db
+    with get_db() as conn:
+        rows = conn.execute(
+            """SELECT g.id, g.prompt, g.template, g.created_at,
+                      COUNT(s.id) as sim_count,
+                      SUM(CASE WHEN s.rating = 'up' THEN 1 ELSE 0 END) as upvotes,
+                      SUM(CASE WHEN s.rating = 'down' THEN 1 ELSE 0 END) as downvotes
+               FROM generations g
+               LEFT JOIN simulations s ON s.generation_id = g.id
+               GROUP BY g.id
+               ORDER BY g.created_at DESC
+               LIMIT ?""",
+            (limit,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 @app.get("/environments")
 def list_environments():
     """List available environment presets."""

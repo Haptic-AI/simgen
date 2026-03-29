@@ -5,6 +5,7 @@ import PromptInput from "@/components/prompt-input";
 import SimulationGrid from "@/components/simulation-grid";
 import StatsPanel from "@/components/stats-panel";
 import EnvironmentSelector from "@/components/environment-selector";
+import HistorySidebar from "@/components/history-sidebar";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -50,6 +51,7 @@ export default function Home() {
   const [environments, setEnvironments] = useState<Record<string, Environment>>({});
   const [flowMode, setFlowMode] = useState(false);
   const [promptChain, setPromptChain] = useState<string[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const fetchStats = useCallback(async () => {
@@ -177,14 +179,37 @@ export default function Home() {
     fetchStats();
   };
 
+  const handleSelectPrompt = (prompt: string) => {
+    handleSubmit(prompt);
+  };
+
   return (
+    <>
+    <HistorySidebar
+      apiUrl={API_URL}
+      open={historyOpen}
+      onClose={() => setHistoryOpen(false)}
+      onSelectPrompt={handleSelectPrompt}
+      refreshKey={generations.length}
+    />
     <main className="min-h-screen flex flex-col">
       <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">
-            <span className="text-indigo-400">sim</span>gen
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">describe a scene, get a simulation</p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setHistoryOpen(true)}
+            className="p-2 text-gray-500 hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-900"
+            title="Prompt history"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">
+              <span className="text-indigo-400">sim</span>gen
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">describe a scene, get a simulation</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {stats && stats.total_ratings > 0 && (
@@ -354,5 +379,6 @@ export default function Home() {
         />
       </div>
     </main>
+    </>
   );
 }
