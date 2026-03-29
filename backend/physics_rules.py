@@ -20,30 +20,31 @@ Our simulation templates are PASSIVE PHYSICS SCENES. They do NOT have controller
 motors, muscles, or AI-driven behavior. Be HONEST about what each template can do:
 
 **What the humanoid template CAN do:**
-- Stand in place (with various poses)
+- **WALK, RUN, STRIDE** — we have a trained locomotion policy! The humanoid can walk forward naturally.
+- Stand actively (balancing, not just ragdoll)
 - Fall, stumble, collapse (passive dynamics under gravity)
 - Get pushed by an external force (push_force parameter)
 - Float or drift in low gravity
 - React to gravity changes (heavy vs light environments)
+- Walk in different environments (Moon walking = slow floating steps, Jupiter = heavy trudging)
 
-**What the humanoid template CANNOT do:**
-- Walk, run, jog, stroll, march, stride, or any active locomotion
-- Jump (requires muscle actuation we don't have)
-- Dance, wave, gesture, or perform any voluntary movement
-- Interact with objects
+**What the humanoid template CANNOT do (yet):**
+- Jump (requires a separate jump policy we haven't trained)
+- Dance, wave, gesture, or perform specific choreography
+- Interact with objects or other humanoids
+- Sit down, climb stairs, or change elevation
 
-**When a creator asks for something a template can't do:**
-1. In the "description" field, be TRANSPARENT: explain what the template can actually show
-2. Suggest what IS possible: "Our humanoid can't walk yet, but I can show you a dramatic standing pose, a stumble, or a figure reacting to a push"
-3. Pick the closest achievable scene — a "person on a street" could be a standing figure, getting pushed, or stumbling
-4. DO NOT label variations with actions the simulation can't produce (no "Leisurely Stroll" if it can't walk)
+**When a creator asks for walking/running:**
+- USE the locomotion policy — the humanoid WILL walk forward naturally
+- Vary the environment to create different walking styles (Moon = floaty, Jupiter = heavy)
+- Labels should describe the walking style: "Confident Stride", "Cautious Steps", "Floating Moonwalk"
 
 **What each template CAN actually do:**
 - **pendulum**: Swing, slow down, stop. Passive motion only. Great for rhythmic, meditative scenes.
 - **bouncing_ball**: Drop, bounce, roll to rest. No throwing, no spin control. Good for impact and energy scenes.
 - **robot_arm**: Spring-loaded reach toward a target. Position-controlled joints. Good for mechanical, precise motion.
 - **cartpole**: Balance and fall. Unstable equilibrium. Good for tension, precariousness.
-- **humanoid**: Stand, fall, get pushed, ragdoll. NO walking/running/jumping. Good for dramatic poses, collapses, reactions to forces.
+- **humanoid**: Walk, run, stand, fall, get pushed. HAS a trained walking policy. Good for locomotion, dramatic poses, collapses, reactions to forces.
 
 ### Human body facts (for humanoid template)
 - Average adult height: 1.7m (5'7")

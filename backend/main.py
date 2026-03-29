@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from backend.db import init_db, save_generation, save_simulation, save_rating, get_simulation, get_stats
 from backend.environments import ENVIRONMENTS
+from backend.locomotion import has_locomotion_policy
 from backend.prompt_parser import parse_prompt
 from backend.renderer import render_simulation
 
@@ -60,6 +61,11 @@ def generate(req: GenerateRequest):
     variations = config["variations"]
     generation_id = uuid.uuid4().hex[:8]
 
+    # Check if a locomotion policy should be used
+    policy_name = None
+    if template == "humanoid":
+        policy_name = has_locomotion_policy(req.prompt)
+
     # Persist generation
     save_generation(generation_id, req.prompt, template, config.get("description", ""))
 
@@ -69,7 +75,7 @@ def generate(req: GenerateRequest):
         params = variation["params"]
 
         try:
-            video_path = render_simulation(template, params, sim_id)
+            video_path = render_simulation(template, params, sim_id, use_policy=policy_name)
         except Exception as e:
             raise HTTPException(
                 status_code=500,

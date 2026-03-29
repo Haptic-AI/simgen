@@ -179,12 +179,51 @@ custom `humanoid.xml` template). To integrate:
 **Recommended:** Option A for v1. Ship it, validate with creators, then invest in
 Option B if the model mismatch causes issues.
 
-### Next steps to integrate
+### Integration completed (2026-03-28/29)
 
-1. Create `backend/locomotion.py` — loads the pkl, provides `run_with_policy(env, params, steps)` function
-2. Update `backend/renderer.py` — detect locomotion prompts, use policy-controlled simulation
-3. Update `backend/physics_rules.py` — humanoid CAN now walk
-4. Test end-to-end: "a person walking" should produce a walking humanoid
+**Architecture:** Split rendering across local Mac and H100 GPU.
+
+```
+Creator prompt "a person walking"
+        ↓
+Local backend (Mac, :8000) detects locomotion keywords in prompt
+        ↓
+Sends render request via SSH tunnel → H100 GPU server (:8100)
+        ↓
+H100 runs Brax PPO policy (8100 env steps) → MuJoCo renders frames → ffmpeg encodes MP4
+        ↓
+MP4 streamed back to local backend → served to frontend
+        ↓
+Non-walking prompts (pendulum, ball, etc.) still render locally on Mac CPU
+```
+
+**Files created/modified:**
+- `backend/locomotion.py` — detects locomotion keywords, returns policy name
+- `backend/renderer.py` — added `_render_on_gpu_server()` for H100 rendering, fallback chain: GPU server → local Brax → passive physics
+- `backend/physics_rules.py` — updated: humanoid CAN now walk/run/stride
+- `backend/main.py` — wires locomotion detection into generate endpoint
+- H100: `/mnt/chris-premium/simgen/gpu_render_server.py` — FastAPI server that loads policy, runs simulation, renders frames, encodes MP4
+
+**How to run:**
+```bash
+# 1. Start SSH tunnel to H100 (in a separate terminal)
+ssh -i ~/.ssh/hapticlabs/admin_260223.pem -p 50000 -N -L 8100:localhost:8100 azureuser@20.69.105.30
+
+# 2. Start GPU render server on H100 (already running, but if needed)
+ssh -i ~/.ssh/hapticlabs/admin_260223.pem -p 50000 azureuser@20.69.105.30 "cd /mnt/chris-premium/simgen && nohup python3 gpu_render_server.py > gpu_server.log 2>&1 &"
+
+# 3. Start local backend
+ANTHROPIC_API_KEY=... python3 -m uvicorn backend.main:app --port 8000
+
+# 4. Start frontend
+cd frontend && npm run dev
+```
+
+**Why the split architecture:**
+- Python 3.9 on Mac can't import Brax/MJX (needs 3.10+ for union type syntax)
+- H100 has Python 3.10+, CUDA, and 96GB VRAM — the right place for GPU rendering
+- SSH tunnel is secure and doesn't require opening Azure firewall ports
+- Passive physics (pendulum, ball, cartpole) still render locally — fast, no GPU needed
 
 ## Success Criteria
 
