@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GPU_RENDER_URL=http://gpu-renderer:8100
+      - MJSIM_DB_PATH=/data/simgen.db
+    volumes:
+      - db-data:/data
+      - video-cache:/tmp/mjsim_videos
+    depends_on:
+      - gpu-renderer
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  gpu-renderer:
+    build:
+      context: gpu-renderer
+    ports:
+      - "8100:8100"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  video-cache:
