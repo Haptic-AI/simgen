@@ -21,7 +21,7 @@ from pydantic import BaseModel
 
 app = FastAPI(title="simgen-gpu-renderer")
 
-POLICIES_DIR = "/mnt/chris-premium/simgen/policies"
+POLICIES_DIR = os.environ.get("POLICIES_DIR", "/app/policies")
 _cache = {}
 _render_lock = threading.Lock()
 
@@ -207,6 +207,109 @@ def _do_render(req: RenderRequest):
     total_time = time.time() - t0
     fsize = os.path.getsize(tmp.name)
     print(f"Total: {total_time:.1f}s | {fsize/1024:.0f} KB", flush=True)
+
+    return FileResponse(tmp.name, media_type="video/mp4", filename="simulation.mp4")
+
+
+class PassiveRenderRequest(BaseModel):
+    template_name: str
+    xml: str
+    params: dict = {}
+    duration: float = 5.0
+    timestep: float = 0.002
+    fps: int = 30
+    width: int = 640
+    height: int = 480
+    theme: str = "studio"
+
+
+@app.post("/render_passive")
+def render_passive(req: PassiveRenderRequest):
+    """Render passive physics simulation from XML on the GPU server."""
+    t0 = time.time()
+
+    model = mujoco.MjModel.from_xml_string(req.xml)
+    data = mujoco.MjData(model)
+
+    # Apply initial conditions based on template
+    if req.template_name == "pendulum":
+        joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "hinge")
+        if joint_id >= 0:
+            data.qpos[model.jnt_qposadr[joint_id]] = req.params.get("initial_angle", 1.57)
+
+    elif req.template_name == "cartpole":
+        pole_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "pole_hinge")
+        if pole_id >= 0:
+            data.qpos[model.jnt_qposadr[pole_id]] = req.params.get("initial_angle", 0.1)
+
+    elif req.template_name == "robot_arm":
+        shoulder_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "shoulder")
+        if shoulder_id >= 0:
+            data.qpos[model.jnt_qposadr[shoulder_id]] = req.params.get("target_angle", 1.0)
+        if model.nu >= 2:
+            data.ctrl[0] = req.params.get("target_angle", 1.0) * req.params.get("speed", 1.0)
+            data.ctrl[1] = req.params.get("target_angle", 1.0) * 0.5 * req.params.get("speed", 1.0)
+
+    elif req.template_name == "humanoid":
+        torso_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "torso")
+        if torso_id >= 0 and abs(req.params.get("push_force", 0)) > 0:
+            data.xfrc_applied[torso_id, 0] = req.params.get("push_force", 0)
+
+    mujoco.mj_forward(model, data)
+
+    cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, "main")
+    cam_name = "main" if cam_id >= 0 else None
+
+    renderer = mujoco.Renderer(model, height=req.height, width=req.width)
+    steps_per_frame = int(1.0 / (req.fps * req.timestep))
+    total_frames = int(req.duration * req.fps)
+
+    frames = []
+    for _ in range(total_frames):
+        for _ in range(steps_per_frame):
+            mujoco.mj_step(model, data)
+
+        if req.template_name == "humanoid" and data.time > 0.5:
+            torso_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "torso")
+            if torso_id >= 0:
+                data.xfrc_applied[torso_id, :] = 0
+
+        renderer.update_scene(data, camera=cam_name)
+        frame = renderer.render()
+        frames.append(frame.copy())
+
+    renderer.close()
+    sim_time = time.time() - t0
+    print(f"Passive sim ({req.template_name}): {sim_time:.1f}s", flush=True)
+
+    # Encode MP4
+    tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+    tmp.close()
+
+    h, w = frames[0].shape[:2]
+    cmd = [
+        "ffmpeg", "-y",
+        "-f", "rawvideo", "-vcodec", "rawvideo",
+        "-s", f"{w}x{h}", "-pix_fmt", "rgb24",
+        "-r", str(req.fps), "-i", "pipe:",
+        "-c:v", "libx264", "-pix_fmt", "yuv420p",
+        "-preset", "ultrafast", "-crf", "23",
+        "-movflags", "+faststart",
+        tmp.name,
+    ]
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    for frame in frames:
+        proc.stdin.write(frame.tobytes())
+    proc.stdin.close()
+    proc.wait()
+
+    if proc.returncode != 0:
+        stderr = proc.stderr.read().decode()
+        return JSONResponse(status_code=500, content={"error": f"ffmpeg: {stderr[-500:]}"})
+
+    total_time = time.time() - t0
+    fsize = os.path.getsize(tmp.name)
+    print(f"Passive total: {total_time:.1f}s | {fsize/1024:.0f} KB", flush=True)
 
     return FileResponse(tmp.name, media_type="video/mp4", filename="simulation.mp4")
 

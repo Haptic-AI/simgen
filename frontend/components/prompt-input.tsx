@@ -34,12 +34,12 @@ export default function PromptInput({ onSubmit, loading, placeholder }: Props) {
         onKeyDown={handleKeyDown}
         placeholder={placeholder || "Describe a scene..."}
         disabled={loading}
-        className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 text-sm"
+        className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 disabled:opacity-50 text-sm transition-colors"
       />
       <button
         onClick={handleSubmit}
         disabled={!prompt.trim() || loading}
-        className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white px-6 py-3 rounded-lg font-medium text-sm transition-colors"
+        className="bg-blue-500 hover:bg-blue-400 disabled:bg-white/[0.04] disabled:text-gray-600 text-white px-6 py-3 rounded-xl font-medium text-xs tracking-wide uppercase transition-colors"
       >
         {loading ? "..." : "Generate"}
       </button>

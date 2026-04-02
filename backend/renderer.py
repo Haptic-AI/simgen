@@ -49,21 +49,27 @@ def render_simulation(template_name: str, params: dict, sim_id: str, use_policy:
     """
     output_path = os.path.join(VIDEO_DIR, f"{sim_id}.mp4")
 
-    # If a locomotion policy is requested, try GPU server first, then local
-    if use_policy:
+    # GPU is ALWAYS the default. CPU is the fallback.
+    gpu_url = os.environ.get("GPU_RENDER_URL", "")
+
+    # If we have a locomotion policy, use the GPU policy renderer
+    if use_policy and gpu_url:
         try:
             _render_on_gpu_server(use_policy, params, output_path, theme=theme)
             return output_path
-        except Exception as e1:
-            print(f"GPU server rendering failed ({e1}), trying local...")
-            try:
-                frames = _render_with_policy(use_policy, params)
-                _encode_mp4(frames, output_path)
-                return output_path
-            except Exception as e2:
-                print(f"Local policy rendering failed ({e2}), falling back to passive physics")
+        except Exception as e:
+            print(f"GPU policy render failed ({e}), falling back to CPU")
 
-    # Standard passive physics rendering
+    # For all templates: try GPU passive render first, then CPU fallback
+    if gpu_url:
+        try:
+            _render_passive_on_gpu(gpu_url, template_name, params, output_path, theme=theme)
+            return output_path
+        except Exception as e:
+            print(f"GPU passive render failed ({e}), falling back to CPU")
+
+    # CPU fallback — only if GPU is unavailable
+    print(f"WARNING: Rendering {template_name} on CPU (slow)")
     frames = _render_passive(template_name, params)
     _encode_mp4(frames, output_path)
     return output_path
@@ -144,6 +150,52 @@ def _render_with_policy(policy_name: str, params: dict) -> list:
 
     renderer.close()
     return frames
+
+
+def _render_passive_on_gpu(gpu_url: str, template_name: str, params: dict, output_path: str, theme: str = "studio"):
+    """Send passive physics render to GPU server."""
+    import json
+
+    xml_template = get_template_xml(template_name)
+    schema = TEMPLATE_SCHEMAS[template_name]
+
+    full_params = {}
+    for pname, pinfo in schema["params"].items():
+        full_params[pname] = params.get(pname, pinfo["default"])
+
+    req_data = json.dumps({
+        "template_name": template_name,
+        "xml": _apply_params(xml_template, full_params, schema["timestep"]),
+        "params": full_params,
+        "duration": schema["sim_duration"],
+        "timestep": schema["timestep"],
+        "fps": FPS,
+        "width": WIDTH,
+        "height": HEIGHT,
+        "theme": theme,
+    })
+
+    result = subprocess.run(
+        [
+            "curl", "-s", "-f",
+            "--max-time", "120",
+            "--connect-timeout", "10",
+            "-X", "POST",
+            f"{gpu_url}/render_passive",
+            "-H", "Content-Type: application/json",
+            "-d", req_data,
+            "-o", output_path,
+        ],
+        capture_output=True,
+        timeout=130,
+    )
+
+    if result.returncode != 0:
+        stderr = result.stderr.decode()
+        raise RuntimeError(f"GPU passive render failed (curl exit {result.returncode}): {stderr}")
+
+    if not os.path.exists(output_path) or os.path.getsize(output_path) < 1000:
+        raise RuntimeError("GPU passive render produced empty or invalid file")
 
 
 def _render_on_gpu_server(policy_name: str, params: dict, output_path: str, theme: str = "studio"):

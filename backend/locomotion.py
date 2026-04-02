@@ -33,14 +33,20 @@ def has_locomotion_policy(prompt: str) -> Optional[str]:
     """Check if the prompt describes locomotion we have a policy for.
 
     Returns the policy name if available, None otherwise.
+    Checks local files first, then falls back to keyword matching
+    (for when policies live on a remote GPU renderer).
     """
     prompt_lower = prompt.lower()
 
     for keywords, policy_name in POLICY_MAP:
         for kw in keywords:
             if kw in prompt_lower:
+                # Check local first
                 policy_path = os.path.join(POLICIES_DIR, f"{policy_name}.pkl")
                 if os.path.exists(policy_path):
+                    return policy_name
+                # If GPU_RENDER_URL is set, the policy may exist on the remote renderer
+                if os.environ.get("GPU_RENDER_URL"):
                     return policy_name
 
     return None
