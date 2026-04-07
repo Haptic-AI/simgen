@@ -6,32 +6,45 @@ SimGen is a prompt-to-scene using a library of pre-trained policies as building 
 
 How does it Work? Describe a scene in plain English. Get 4 physics simulations back. Iterate until it's perfect. Every like and dislike teaches the system your creative style — grounded in the real laws of physics.
 
-## Architecture
+## How It Works Under the Hood
 
-```
-Browser → Cloudflare (HTTPS) → simgen-frontend (nginx, e2-small)
-                                    ├── /  → Next.js :3000
-                                    └── /generate, /job, /video, etc.
-                                              ↓
-                                    simgen-a100 (A100 80GB GPU, a2-highgpu-1g)
-                                    ├── Backend (FastAPI :8000)
-                                    │     ├── Async job queue (submit → poll)
-                                    │     ├── Claude API for prompt parsing
-                                    │     └── Parallel rendering (4 threads)
-                                    └── GPU Renderer (FastAPI :8100)
-                                          ├── Trained locomotion policies (walk, run, hop)
-                                          ├── Passive physics rendering (/render_passive)
-                                          └── JIT warmup on startup
-```
+SimGen has three main pieces:
+
+1. **Frontend** (Next.js) — The web UI where you type prompts and watch simulations
+2. **Backend** (FastAPI + Python) — Takes your prompt, uses Claude to interpret it, and orchestrates the physics simulation
+3. **GPU Renderer** (MuJoCo + Brax) — Runs the actual physics on a GPU and renders video output
+
+When you describe a scene, Claude translates your words into physics parameters (gravity, mass, friction, speed, etc.) and picks the right simulation template. The GPU renders 4 variations in parallel so you can pick your favorite.
 
 **Live at:** https://simgen.hapticlabs.ai
 
-**GCloud project:** `www-hapticlabs-org`
+## Getting Started
 
-| VM | Spec | Zone | Access |
-|---|---|---|---|
-| `simgen-frontend` | e2-small | us-central1-a | Cloudflare IPs only, port 80/443 |
-| `simgen-a100` | a2-highgpu-1g (A100 80GB) | us-central1-f | Internal only, no external IP |
+```bash
+# 1. Clone the repo
+git clone https://github.com/Haptic-AI/simgen.git
+cd simgen
+
+# 2. Set up your environment
+cp .env.example .env
+# Edit .env and add your Anthropic API key
+
+# 3. Run with Docker (recommended)
+docker compose up --build
+```
+
+This starts all three services. Open http://localhost:3000 and start prompting.
+
+**Without Docker:**
+
+```bash
+# Backend
+cd backend && pip install -e .
+ANTHROPIC_API_KEY=your-key-here python3 -m uvicorn backend.main:app --port 8000
+
+# Frontend (in another terminal)
+cd frontend && npm install && npm run dev
+```
 
 ## What Have We Done
 
