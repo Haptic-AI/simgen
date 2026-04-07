@@ -1,0 +1,87 @@
+<mujoco model="humanoid">
+  <option gravity="0 0 -{{gravity}}" timestep="{{timestep}}"/>
+
+  <visual>
+    <global offwidth="640" offheight="480"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.02 0.05 0.08" rgb2="0.1 0.15 0.2" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.12 0.12 0.12" rgb2="0.18 0.18 0.18" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="8 8" reflectance="0.05"/>
+    <material name="skin" rgba="0.7 0.5 0.3 1"/>
+    <material name="joint_mat" rgba="0.3 0.5 0.8 1"/>
+  </asset>
+
+  <default>
+    <joint damping="{{damping}}" armature="0.01"/>
+    <geom margin="0.001"/>
+  </default>
+
+  <worldbody>
+    <light directional="true" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" pos="3 -3 4" dir="-1 1 -1" castshadow="true"/>
+    <light directional="true" diffuse="0.4 0.5 0.6" pos="-3 -4 2" dir="1 1 -0.2" castshadow="false"/>
+
+    <geom name="floor" type="plane" size="10 10 0.1" material="grid"/>
+
+    <camera name="main" pos="2.5 -2.5 1.5" xyaxes="0.7 0.7 0 -0.2 0.2 0.96" fovy="45"/>
+    <camera name="front" pos="0 -3 1.5" xyaxes="1 0 0 0 0.3 1" fovy="45"/>
+
+    <!-- Torso -->
+    <body name="torso" pos="0 0 {{initial_height}}">
+      <freejoint name="root"/>
+      <geom name="torso_geom" type="capsule" fromto="0 0 -0.15 0 0 0.15" size="0.1" material="skin"/>
+
+      <!-- Head -->
+      <body name="head" pos="0 0 0.22">
+        <geom type="sphere" size="0.09" material="skin"/>
+      </body>
+
+      <!-- Right arm -->
+      <body name="right_upper_arm" pos="0.15 0 0.1">
+        <joint name="right_shoulder" type="ball"/>
+        <geom type="capsule" fromto="0 0 0 0.25 0 -0.05" size="0.04" material="joint_mat"/>
+        <body name="right_lower_arm" pos="0.25 0 -0.05">
+          <joint name="right_elbow" type="hinge" axis="0 1 0" range="0 2.5"/>
+          <geom type="capsule" fromto="0 0 0 0.22 0 0" size="0.03" material="joint_mat"/>
+        </body>
+      </body>
+
+      <!-- Left arm -->
+      <body name="left_upper_arm" pos="-0.15 0 0.1">
+        <joint name="left_shoulder" type="ball"/>
+        <geom type="capsule" fromto="0 0 0 -0.25 0 -0.05" size="0.04" material="joint_mat"/>
+        <body name="left_lower_arm" pos="-0.25 0 -0.05">
+          <joint name="left_elbow" type="hinge" axis="0 1 0" range="0 2.5"/>
+          <geom type="capsule" fromto="0 0 0 -0.22 0 0" size="0.03" material="joint_mat"/>
+        </body>
+      </body>
+
+      <!-- Right leg -->
+      <body name="right_thigh" pos="0.08 0 -0.2">
+        <joint name="right_hip" type="ball"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.35" size="0.05" material="skin"/>
+        <body name="right_shin" pos="0 0 -0.35">
+          <joint name="right_knee" type="hinge" axis="0 1 0" range="-2.5 0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.3" size="0.04" material="skin"/>
+          <body name="right_foot" pos="0 0 -0.3">
+            <geom type="box" size="0.06 0.03 0.02" pos="0.02 0 0" rgba="0.3 0.3 0.35 1"/>
+          </body>
+        </body>
+      </body>
+
+      <!-- Left leg -->
+      <body name="left_thigh" pos="-0.08 0 -0.2">
+        <joint name="left_hip" type="ball"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.35" size="0.05" material="skin"/>
+        <body name="left_shin" pos="0 0 -0.35">
+          <joint name="left_knee" type="hinge" axis="0 1 0" range="-2.5 0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.3" size="0.04" material="skin"/>
+          <body name="left_foot" pos="0 0 -0.3">
+            <geom type="box" size="0.06 0.03 0.02" pos="0.02 0 0" rgba="0.3 0.3 0.35 1"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
