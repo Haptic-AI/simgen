@@ -1,6 +1,11 @@
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,textmate,sublimetext,webstorm+all,node,react,nextjs,nuxtjs,pydev,dotenv
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,textmate,sublimetext,webstorm+all,node,react,nextjs,nuxtjs,pydev,dotenv
 
+### SQLite ###
+*.db
+*.db-shm
+*.db-wal
+
 ### dotenv ###
 .env
 
