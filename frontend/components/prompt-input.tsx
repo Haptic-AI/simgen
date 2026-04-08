@@ -34,14 +34,16 @@ export default function PromptInput({ onSubmit, loading, placeholder }: Props) {
         onKeyDown={handleKeyDown}
         placeholder={placeholder || "Describe a scene..."}
         disabled={loading}
-        className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 disabled:opacity-50 text-sm transition-colors"
+        className="flex-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 disabled:opacity-50 text-sm transition-colors"
+        style={{ boxShadow: 'var(--shadow-sm)' }}
       />
       <button
         onClick={handleSubmit}
         disabled={!prompt.trim() || loading}
-        className="bg-blue-500 hover:bg-blue-400 disabled:bg-white/[0.04] disabled:text-gray-600 text-white px-6 py-3 rounded-xl font-medium text-xs tracking-wide uppercase transition-colors"
+        className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] disabled:bg-[var(--color-border)] disabled:text-[var(--color-text-faint)] text-[var(--color-primary-text)] px-6 py-3 rounded-xl font-medium text-xs tracking-wide uppercase transition-colors"
+        style={{ boxShadow: 'var(--shadow-sm)' }}
       >
-        {loading ? "..." : "Generate"}
+        {loading ? "..." : "Simulate"}
       </button>
     </div>
   );

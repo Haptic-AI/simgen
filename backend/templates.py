@@ -60,6 +60,55 @@ TEMPLATE_SCHEMAS = {
         "sim_duration": 10.0,
         "timestep": 0.002,
     },
+    "double_pendulum": {
+        "description": "Two linked pendulum arms creating chaotic, mesmerizing motion patterns",
+        "params": {
+            "length1": {"min": 0.3, "max": 1.5, "default": 0.8, "unit": "meters"},
+            "length2": {"min": 0.3, "max": 1.5, "default": 0.6, "unit": "meters"},
+            "damping": {"min": 0.0, "max": 3.0, "default": 0.05, "unit": "Ns/m"},
+            "initial_angle1": {"min": -3.14, "max": 3.14, "default": 2.5, "unit": "radians"},
+            "initial_angle2": {"min": -3.14, "max": 3.14, "default": 1.0, "unit": "radians"},
+            "gravity": {"min": 0.5, "max": 30.0, "default": 9.81, "unit": "m/s^2"},
+        },
+        "sim_duration": 10.0,
+        "timestep": 0.002,
+    },
+    "falling_stack": {
+        "description": "Tower of blocks collapsing under gravity — satisfying destruction physics",
+        "params": {
+            "block_size": {"min": 0.05, "max": 0.2, "default": 0.1, "unit": "meters"},
+            "block_mass": {"min": 0.1, "max": 5.0, "default": 0.5, "unit": "kg"},
+            "offset": {"min": 0.0, "max": 0.15, "default": 0.03, "unit": "meters"},
+            "friction": {"min": 0.1, "max": 1.0, "default": 0.5, "unit": "coefficient"},
+            "gravity": {"min": 0.5, "max": 30.0, "default": 9.81, "unit": "m/s^2"},
+        },
+        "sim_duration": 10.0,
+        "timestep": 0.002,
+    },
+    "ragdoll": {
+        "description": "Limp articulated figure falling, tumbling, and colliding — game physics ragdoll",
+        "params": {
+            "drop_height": {"min": 1.0, "max": 5.0, "default": 2.5, "unit": "meters"},
+            "push_force": {"min": -100.0, "max": 100.0, "default": 0.0, "unit": "N"},
+            "damping": {"min": 0.0, "max": 5.0, "default": 0.3, "unit": "Ns/m"},
+            "gravity": {"min": 0.5, "max": 30.0, "default": 9.81, "unit": "m/s^2"},
+        },
+        "sim_duration": 10.0,
+        "timestep": 0.002,
+    },
+    "spinning_top": {
+        "description": "Gyroscopic spinning top with precession — elegant rotational physics",
+        "params": {
+            "disc_radius": {"min": 0.03, "max": 0.15, "default": 0.08, "unit": "meters"},
+            "mass": {"min": 0.1, "max": 2.0, "default": 0.5, "unit": "kg"},
+            "spin_speed": {"min": 5.0, "max": 80.0, "default": 40.0, "unit": "rad/s"},
+            "tilt_angle": {"min": 0.0, "max": 0.5, "default": 0.15, "unit": "radians"},
+            "tip_height": {"min": 0.02, "max": 0.1, "default": 0.03, "unit": "meters"},
+            "gravity": {"min": 0.5, "max": 30.0, "default": 9.81, "unit": "m/s^2"},
+        },
+        "sim_duration": 10.0,
+        "timestep": 0.002,
+    },
 }
 
 

@@ -34,8 +34,8 @@ export default function FeedbackButtons({ simulationId, apiUrl, onFeedback }: Pr
         onClick={() => handleFeedback("up")}
         className={`p-1.5 rounded transition-colors ${
           rating === "up"
-            ? "bg-green-900/50 text-green-400"
-            : "text-gray-600 hover:text-gray-300"
+            ? "bg-[var(--color-success-light)] text-[var(--color-success)]"
+            : "text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
         }`}
         title="Good simulation"
       >
@@ -48,8 +48,8 @@ export default function FeedbackButtons({ simulationId, apiUrl, onFeedback }: Pr
         onClick={() => handleFeedback("down")}
         className={`p-1.5 rounded transition-colors ${
           rating === "down"
-            ? "bg-red-900/50 text-red-400"
-            : "text-gray-600 hover:text-gray-300"
+            ? "bg-[var(--color-error-light)] text-[var(--color-error)]"
+            : "text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
         }`}
         title="Bad simulation"
       >

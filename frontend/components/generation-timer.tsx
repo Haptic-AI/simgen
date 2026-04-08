@@ -40,17 +40,17 @@ export default function GenerationTimer({ running, label }: Props) {
     <div className="flex flex-col items-center gap-2">
       <div className="flex items-center gap-3">
         {running && (
-          <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" />
         )}
-        <span className="font-mono text-2xl tabular-nums tracking-tight text-gray-200">
-          {mins > 0 && <>{mins}<span className="text-gray-600">m </span></>}
+        <span className="font-mono text-2xl tabular-nums tracking-tight text-[var(--color-text)]">
+          {mins > 0 && <>{mins}<span className="text-[var(--color-text-faint)]">m </span></>}
           {displaySecs.toString().padStart(2, "0")}
-          <span className="text-gray-600">.</span>
-          <span className="text-gray-500 text-lg">{ms.toString().padStart(2, "0")}</span>
-          <span className="text-gray-600 text-sm ml-1">s</span>
+          <span className="text-[var(--color-text-faint)]">.</span>
+          <span className="text-[var(--color-text-muted)] text-lg">{ms.toString().padStart(2, "0")}</span>
+          <span className="text-[var(--color-text-faint)] text-sm ml-1">s</span>
         </span>
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-[var(--color-text-muted)]">
         {running
           ? label || "Generating 4 simulations..."
           : elapsed > 0

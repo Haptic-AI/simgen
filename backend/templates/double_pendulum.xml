@@ -1,0 +1,41 @@
+<mujoco model="double_pendulum">
+  <option gravity="0 0 -{{gravity}}" timestep="{{timestep}}"/>
+
+  <visual>
+    <global offwidth="640" offheight="480"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.05 0.07 0.1" rgb2="0.15 0.18 0.22" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.15 0.15 0.15" rgb2="0.2 0.2 0.2" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="8 8" reflectance="0.1"/>
+  </asset>
+
+  <worldbody>
+    <light directional="true" diffuse="0.8 0.8 0.9" specular="0.3 0.3 0.3" pos="0 -2 3" dir="0 1 -1" castshadow="true"/>
+    <light directional="true" diffuse="0.3 0.3 0.4" pos="2 2 2" dir="-1 -1 -0.5" castshadow="false"/>
+
+    <geom name="floor" type="plane" size="5 5 0.1" material="grid"/>
+
+    <camera name="main" pos="0 -4 3" xyaxes="1 0 0 0 0.5 1" fovy="45"/>
+
+    <!-- Pivot point -->
+    <body name="pivot" pos="0 0 3.5">
+      <geom type="sphere" size="0.06" rgba="0.5 0.5 0.5 1"/>
+      <joint name="hinge1" type="hinge" axis="0 1 0" damping="{{damping}}"/>
+
+      <!-- First arm -->
+      <body name="arm1" pos="0 0 -{{length1}}">
+        <geom type="capsule" fromto="0 0 0 0 0 {{length1}}" size="0.025" rgba="0.3 0.5 0.9 1"/>
+        <geom type="sphere" size="0.06" rgba="0.3 0.5 0.9 1" pos="0 0 0"/>
+
+        <!-- Second arm joint -->
+        <joint name="hinge2" type="hinge" axis="0 1 0" damping="{{damping}}"/>
+        <body name="arm2" pos="0 0 -{{length2}}">
+          <geom type="capsule" fromto="0 0 0 0 0 {{length2}}" size="0.02" rgba="0.9 0.4 0.3 1"/>
+          <geom name="bob2" type="sphere" size="0.07" rgba="0.9 0.4 0.3 1" pos="0 0 0"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

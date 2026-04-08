@@ -41,7 +41,7 @@ export default function StatusWidget({ apiUrl }: Props) {
   }, [fetchStatus]);
 
   const dot = (ok: boolean) => (
-    <span className={`inline-block w-1.5 h-1.5 rounded-full ${ok ? "bg-green-400" : "bg-red-400"}`} />
+    <span className={`inline-block w-1.5 h-1.5 rounded-full ${ok ? "bg-[var(--color-success)]" : "bg-[var(--color-error)]"}`} />
   );
 
   if (!status) return null;
@@ -52,26 +52,26 @@ export default function StatusWidget({ apiUrl }: Props) {
 
   return (
     <div className="fixed top-4 right-4 z-30">
-      {/* Collapsed: just a dot */}
       {collapsed ? (
         <button
           onClick={() => setCollapsed(false)}
-          className="flex items-center gap-2 bg-gray-900/90 backdrop-blur border border-gray-800 rounded-lg px-3 py-2 hover:border-gray-700 transition-colors"
+          className="flex items-center gap-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-md)] px-3 py-2 hover:border-[var(--color-border-strong)] transition-colors"
+          style={{ backdropFilter: 'blur(8px)', boxShadow: 'var(--shadow-sm)' }}
           title="System status"
         >
-          <span className={`w-2 h-2 rounded-full ${allOk ? "bg-green-400" : "bg-amber-400 animate-pulse"}`} />
-          <span className="text-xs text-gray-500">Status</span>
+          <span className={`w-2 h-2 rounded-full ${allOk ? "bg-[var(--color-success)]" : "bg-[var(--color-warning)] animate-pulse"}`} />
+          <span className="text-xs text-[var(--color-text-muted)]">Status</span>
         </button>
       ) : (
-        <div className="bg-gray-900/95 backdrop-blur border border-gray-800 rounded-xl w-64 shadow-xl">
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-800/50">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] w-64" style={{ backdropFilter: 'blur(12px)', boxShadow: 'var(--shadow-lg)' }}>
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--color-border)]">
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${allOk ? "bg-green-400" : "bg-amber-400 animate-pulse"}`} />
-              <span className="text-xs font-medium text-gray-300">System Status</span>
+              <span className={`w-2 h-2 rounded-full ${allOk ? "bg-[var(--color-success)]" : "bg-[var(--color-warning)] animate-pulse"}`} />
+              <span className="text-xs font-medium text-[var(--color-text)]">System Status</span>
             </div>
             <button
               onClick={() => setCollapsed(true)}
-              className="text-gray-600 hover:text-gray-400 transition-colors"
+              className="text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)] transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -92,11 +92,11 @@ export default function StatusWidget({ apiUrl }: Props) {
           </div>
 
           {policies.length > 0 && (
-            <div className="px-3 py-2 border-t border-gray-800/50">
-              <p className="text-[10px] uppercase tracking-wider text-gray-600 mb-1.5">Trained Policies</p>
+            <div className="px-3 py-2 border-t border-[var(--color-border)]">
+              <p className="text-[10px] uppercase tracking-wider text-[var(--color-text-faint)] mb-1.5">Trained Policies</p>
               <div className="flex flex-wrap gap-1">
                 {policies.map((p) => (
-                  <span key={p} className="text-[10px] bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded">
+                  <span key={p} className="text-[10px] bg-[var(--color-primary-light)] text-[var(--color-text-muted)] px-1.5 py-0.5 rounded-[var(--radius-sm)]">
                     {p}
                   </span>
                 ))}
@@ -104,10 +104,10 @@ export default function StatusWidget({ apiUrl }: Props) {
             </div>
           )}
 
-          <div className="px-3 py-1.5 border-t border-gray-800/50">
+          <div className="px-3 py-1.5 border-t border-[var(--color-border)]">
             <button
               onClick={fetchStatus}
-              className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors"
+              className="text-[10px] text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)] transition-colors"
             >
               Refresh
             </button>
@@ -128,10 +128,10 @@ function StatusRow({ label, ok, dot, detail }: {
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         {dot(ok)}
-        <span className="text-xs text-gray-400">{label}</span>
+        <span className="text-xs text-[var(--color-text-muted)]">{label}</span>
       </div>
       {detail && (
-        <span className={`text-[10px] ${ok ? "text-gray-600" : "text-red-400"}`}>
+        <span className={`text-[10px] ${ok ? "text-[var(--color-text-faint)]" : "text-[var(--color-error)]"}`}>
           {detail.length > 20 ? detail.slice(0, 20) + "..." : detail}
         </span>
       )}

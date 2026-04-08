@@ -51,22 +51,24 @@ export default function HistorySidebar({ apiUrl, open, onClose, onSelectPrompt, 
       {/* Overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/40 z-40"
+          className="fixed inset-0 bg-[var(--color-accent)]/20 z-40"
+          style={{ backdropFilter: 'blur(2px)' }}
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-gray-950 border-r border-gray-800 z-50 transform transition-transform duration-200 ${
+        className={`fixed top-0 left-0 h-full w-80 bg-[var(--color-bg)] border-r border-[var(--color-border-strong)] z-50 transform transition-transform duration-200 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{ boxShadow: open ? 'var(--shadow-lg)' : 'none' }}
       >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-200">Prompt History</h2>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--color-border)]">
+          <h2 className="text-sm font-semibold text-[var(--color-text)]">Prompt History</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-300 transition-colors"
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -76,7 +78,7 @@ export default function HistorySidebar({ apiUrl, open, onClose, onSelectPrompt, 
 
         <div className="overflow-y-auto h-[calc(100%-57px)] px-2 py-2">
           {history.length === 0 && (
-            <p className="text-sm text-gray-600 text-center py-8">No prompts yet</p>
+            <p className="text-sm text-[var(--color-text-faint)] text-center py-8">No prompts yet</p>
           )}
 
           {history.map((item) => {
@@ -90,19 +92,19 @@ export default function HistorySidebar({ apiUrl, open, onClose, onSelectPrompt, 
                   onSelectPrompt(displayPrompt);
                   onClose();
                 }}
-                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-900 transition-colors group mb-1"
+                className="w-full text-left px-3 py-2.5 rounded-[var(--radius-md)] hover:bg-[var(--color-primary-light)] transition-colors group mb-1"
               >
-                <p className="text-sm text-gray-300 group-hover:text-indigo-400 transition-colors line-clamp-2">
+                <p className="text-sm text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
                   {displayPrompt}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm text-gray-600">{formatTime(item.created_at)}</span>
-                  <span className="text-sm text-gray-700">{item.template}</span>
+                  <span className="text-sm text-[var(--color-text-faint)]">{formatTime(item.created_at)}</span>
+                  <span className="text-sm text-[var(--color-text-faint)]">{item.template}</span>
                   {total > 0 && (
                     <span className="text-sm">
-                      <span className="text-green-500">{item.upvotes}</span>
-                      <span className="text-gray-700">/</span>
-                      <span className="text-red-500">{item.downvotes}</span>
+                      <span className="text-[var(--color-success)]">{item.upvotes}</span>
+                      <span className="text-[var(--color-text-faint)]">/</span>
+                      <span className="text-[var(--color-error)]">{item.downvotes}</span>
                     </span>
                   )}
                 </div>

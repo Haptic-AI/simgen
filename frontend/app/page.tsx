@@ -11,6 +11,20 @@ import GenerationTimer from "@/components/generation-timer";
 import StatusWidget from "@/components/status-widget";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const BLOG_URL = "https://www.hapticlabs.ai/blog/2026/04/06/from-cloud-gpus-to-creative-canvas?ref=https://simgen.hapticlabs.ai";
+const GITHUB_URL = "https://github.com/Haptic-AI/simgen?ref=https://simgen.hapticlabs.ai";
+
+const SHOWCASE_PROMPTS = [
+  { prompt: "a pendulum swinging in slow motion", template: "pendulum" },
+  { prompt: "a ball bouncing down stairs", template: "bouncing_ball" },
+  { prompt: "a robot arm reaching for a target", template: "robot_arm" },
+  { prompt: "a pole balancing on a cart", template: "cartpole" },
+  { prompt: "a humanoid figure stumbling forward", template: "humanoid" },
+  { prompt: "a chaotic double pendulum", template: "double_pendulum" },
+  { prompt: "a tower of blocks collapsing", template: "falling_stack" },
+  { prompt: "a ragdoll tumbling off a ledge", template: "ragdoll" },
+  { prompt: "a spinning top wobbling on a table", template: "spinning_top" },
+];
 
 interface Simulation {
   id: string;
@@ -85,7 +99,6 @@ export default function Home() {
     }
   }, [generations.length]);
 
-  // Poll a job until complete
   const pollJob = async (jobId: string): Promise<Generation> => {
     while (true) {
       await new Promise((r) => setTimeout(r, 2000));
@@ -95,7 +108,6 @@ export default function Home() {
 
       if (job.status === "complete") return job.result;
       if (job.status === "error") throw new Error(job.error || "Generation failed");
-      // Update progress label
       if (job.status === "rendering" && job.progress !== undefined) {
         setLoadingLabel(`Rendering video ${job.progress + 1} of ${job.total}...`);
       } else if (job.status === "parsing") {
@@ -112,7 +124,6 @@ export default function Home() {
     setLoadingLabel("Submitting...");
     setPromptChain((prev) => [...prev, prompt]);
     try {
-      // Submit job — returns immediately
       const res = await fetch(`${API_URL}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -124,7 +135,6 @@ export default function Home() {
       }
       const { job_id } = await res.json();
 
-      // Poll until done
       const data: Generation = await pollJob(job_id);
       data.environment = environment;
       setGenerations((prev) => [data, ...prev]);
@@ -229,12 +239,12 @@ export default function Home() {
     />
     <StatusWidget apiUrl={API_URL} />
     <main className="min-h-screen flex flex-col">
-      {/* Header — Material-inspired clean header */}
-      <header className="border-b border-white/[0.06] px-8 py-5 flex items-center justify-between">
+      {/* Header */}
+      <header className="border-b border-[var(--color-border)] px-8 py-5 flex items-center justify-between bg-[var(--color-surface)]" style={{ backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-4">
           <button
             onClick={() => setHistoryOpen(true)}
-            className="p-2 text-gray-500 hover:text-gray-300 transition-colors rounded-lg hover:bg-white/[0.04]"
+            className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors rounded-lg hover:bg-[var(--color-primary-light)]"
             title="Prompt history"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -242,31 +252,47 @@ export default function Home() {
             </svg>
           </button>
           <div>
-            <h1 className="text-2xl font-light tracking-tight">
-              <span className="font-semibold text-blue-400">Sim</span>
-              <span className="text-gray-300">Gen</span>
+            <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">
+              <span className="text-[var(--color-primary)]">Sim</span>
+              <span className="text-[var(--color-accent)]">Gen</span>
             </h1>
-            <p className="text-xs text-gray-500 mt-0.5 tracking-wide">prompt-to-physics simulation</p>
+            <p className="text-sm font-medium text-[var(--color-text-muted)] mt-0.5 tracking-wide">prompt-to-physics simulation</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           {stats && stats.total_ratings > 0 && (
-            <div className="text-xs text-gray-500 bg-white/[0.03] border border-white/[0.06] rounded-full px-3 py-1.5">
+            <div className="text-xs text-[var(--color-text-muted)] bg-[var(--color-primary-light)] border border-[var(--color-border)] rounded-full px-3 py-1.5">
               Learning from{" "}
-              <span className="text-blue-400 font-medium">{stats.total_ratings}</span> ratings
+              <span className="text-[var(--color-primary)] font-medium">{stats.total_ratings}</span> ratings
             </div>
           )}
           {flowMode && (
             <button
               onClick={() => setFlowMode(false)}
-              className="text-xs px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 transition-colors hover:bg-blue-500/20"
+              className="text-xs px-3 py-1.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] border border-[var(--color-primary)]/20 transition-colors hover:bg-[var(--color-primary)]/10"
             >
               Flow Mode
             </button>
           )}
+          <a
+            href={BLOG_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--color-primary-light)]"
+          >
+            Blog
+          </a>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--color-primary-light)]"
+          >
+            GitHub
+          </a>
           <button
             onClick={() => setShowStats(!showStats)}
-            className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/[0.04]"
+            className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--color-primary-light)]"
           >
             {showStats ? "Hide insights" : "Insights"}
           </button>
@@ -277,12 +303,12 @@ export default function Home() {
 
       {/* Journey breadcrumb */}
       {promptChain.length > 0 && (
-        <div className="border-b border-white/[0.04] px-8 py-2 flex items-center gap-2 overflow-x-auto">
-          <span className="text-xs text-gray-600 shrink-0 uppercase tracking-wider">Journey</span>
+        <div className="border-b border-[var(--color-border)] px-8 py-2 flex items-center gap-2 overflow-x-auto bg-[var(--color-bg-alt)]">
+          <span className="text-sm text-[var(--color-text-faint)] shrink-0 uppercase tracking-wider font-semibold">Journey</span>
           {promptChain.map((p, i) => (
-            <span key={i} className="text-xs shrink-0">
-              {i > 0 && <span className="text-gray-700 mx-1">&rarr;</span>}
-              <span className={i === promptChain.length - 1 ? "text-blue-400" : "text-gray-500"}>
+            <span key={i} className="text-sm shrink-0">
+              {i > 0 && <span className="text-[var(--color-text-faint)] mx-1">&rarr;</span>}
+              <span className={i === promptChain.length - 1 ? "text-[var(--color-primary)] font-medium" : "text-[var(--color-text-muted)]"}>
                 {p.length > 30 ? p.slice(0, 30) + "..." : p}
               </span>
             </span>
@@ -291,7 +317,7 @@ export default function Home() {
             <button
               onClick={handleUndo}
               disabled={loading}
-              className="text-xs text-gray-600 hover:text-red-400 transition-colors shrink-0 ml-2 disabled:opacity-30"
+              className="text-xs text-[var(--color-text-faint)] hover:text-[var(--color-error)] transition-colors shrink-0 ml-2 disabled:opacity-30"
             >
               Undo
             </button>
@@ -300,11 +326,11 @@ export default function Home() {
       )}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-8 space-y-8">
-        {/* Loading state with timer */}
+        {/* Loading state */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 space-y-6">
             <div className="relative">
-              <div className="w-12 h-12 border-2 border-blue-500/30 border-t-blue-400 rounded-full animate-spin" />
+              <div className="w-12 h-12 border-2 border-[var(--color-primary)]/30 border-t-[var(--color-primary)] rounded-full animate-spin" />
             </div>
             <GenerationTimer
               running={loading}
@@ -314,7 +340,7 @@ export default function Home() {
         )}
 
         {error && (
-          <div className="max-w-2xl mx-auto bg-red-500/5 border border-red-500/20 rounded-xl px-4 py-3 text-red-300 text-xs">
+          <div className="max-w-2xl mx-auto bg-[var(--color-error-light)] border border-[var(--color-error)]/20 rounded-[var(--radius-lg)] px-4 py-3 text-[var(--color-error)] text-xs">
             {error}
           </div>
         )}
@@ -323,12 +349,12 @@ export default function Home() {
         {generations.length > 0 && (
           <div>
             {generations[0].description && (
-              <p className="max-w-4xl mx-auto text-xs text-gray-500 mb-2 italic leading-relaxed">
+              <p className="max-w-4xl mx-auto text-xs text-[var(--color-text-muted)] mb-2 italic leading-relaxed">
                 {generations[0].description}
               </p>
             )}
             {flowMode && !loading && (
-              <p className="max-w-4xl mx-auto text-xs text-blue-400/60 mb-3">
+              <p className="max-w-4xl mx-auto text-xs text-[var(--color-primary)]/60 mb-3">
                 Pick your favorite — it auto-generates 4 more variations
               </p>
             )}
@@ -343,12 +369,12 @@ export default function Home() {
           </div>
         )}
 
-        {/* Previous generations — collapsed */}
+        {/* Previous generations */}
         {generations.length > 1 && (
           <div className="max-w-4xl mx-auto">
             <button
               onClick={() => setShowPrevious(!showPrevious)}
-              className="text-xs text-gray-600 uppercase tracking-widest font-medium hover:text-gray-400 transition-colors flex items-center gap-2"
+              className="text-xs text-[var(--color-text-faint)] uppercase tracking-widest font-medium hover:text-[var(--color-text-muted)] transition-colors flex items-center gap-2"
             >
               <svg className={`w-3 h-3 transition-transform ${showPrevious ? "rotate-90" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -373,42 +399,40 @@ export default function Home() {
           </div>
         )}
 
-        {/* Empty state */}
+        {/* Empty state — showcase all 9 templates */}
         {!loading && generations.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-32 text-gray-600">
-            <div className="w-16 h-16 mb-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
-              <svg className="w-7 h-7 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+          <div className="flex flex-col items-center justify-center py-16 text-[var(--color-text-muted)]">
+            <div className="w-16 h-16 mb-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center" style={{ boxShadow: 'var(--shadow-sm)' }}>
+              <svg className="w-7 h-7 text-[var(--color-text-faint)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
             </div>
-            <p className="text-base font-light text-gray-400">Describe what you want to see</p>
-            <p className="text-xs mt-3 text-gray-600 max-w-sm text-center leading-relaxed">
-              &quot;a figure standing on a cliff edge&quot; &middot; &quot;a ball bouncing down stairs&quot; &middot; &quot;a pendulum in slow motion&quot;
+            <p className="text-lg font-semibold text-[var(--color-text)]">Describe what you want to see</p>
+            <p className="text-sm mt-2 text-[var(--color-text-muted)] max-w-md text-center leading-relaxed">
+              Type a prompt below, or click any example to simulate instantly
             </p>
+
+            <div className="grid grid-cols-3 gap-3 mt-8 max-w-2xl w-full">
+              {SHOWCASE_PROMPTS.map((item) => (
+                <button
+                  key={item.template}
+                  onClick={() => handleSubmit(item.prompt)}
+                  className="text-left bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-md)] px-4 py-3 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-all group"
+                  style={{ boxShadow: 'var(--shadow-sm)' }}
+                >
+                  <p className="text-sm font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors leading-snug">
+                    {item.prompt}
+                  </p>
+                  <p className="text-xs text-[var(--color-text-faint)] mt-1.5 font-mono">{item.template}</p>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Bottom bar — Material-style input area */}
-      <div className="border-t border-white/[0.06] px-8 py-4 space-y-3 bg-[#0f1115]/80 backdrop-blur">
-        {/* Environment and theme selectors — hidden for now
-        <div className="max-w-2xl mx-auto space-y-2">
-          {Object.keys(environments).length > 0 && (
-            <EnvironmentSelector
-              environments={environments}
-              selected={environment}
-              onSelect={setEnvironment}
-            />
-          )}
-          {Object.keys(themes).length > 0 && (
-            <ThemeSelector
-              themes={themes}
-              selected={theme}
-              onSelect={setTheme}
-            />
-          )}
-        </div>
-        */}
+      {/* Bottom bar */}
+      <div className="border-t border-[var(--color-border)] px-8 py-4 space-y-3 bg-[var(--color-surface)]" style={{ backdropFilter: 'blur(12px)' }}>
         <PromptInput
           onSubmit={flowMode && generations.length > 0
             ? (prompt) => {
@@ -427,6 +451,20 @@ export default function Home() {
             : "Describe a scene..."
           }
         />
+        <div className="max-w-2xl mx-auto flex items-center justify-center gap-3 text-xs text-[var(--color-text-faint)]">
+          <span>Built by</span>
+          <a href="https://www.hapticlabs.ai?ref=https://simgen.hapticlabs.ai" target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors">
+            Haptic Labs
+          </a>
+          <span>&middot;</span>
+          <a href={BLOG_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-primary)] transition-colors">
+            Blog
+          </a>
+          <span>&middot;</span>
+          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-primary)] transition-colors">
+            GitHub
+          </a>
+        </div>
       </div>
     </main>
     </>

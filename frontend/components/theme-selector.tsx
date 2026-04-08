@@ -12,12 +12,12 @@ interface Props {
 }
 
 const COLORS: Record<string, string> = {
-  studio: "bg-gray-700",
-  outdoor: "bg-green-700",
-  industrial: "bg-zinc-600",
-  desert: "bg-amber-700",
-  night: "bg-slate-900",
-  snow: "bg-slate-200",
+  studio: "bg-[var(--color-text-muted)]",
+  outdoor: "bg-[var(--color-success)]",
+  industrial: "bg-[var(--color-text-faint)]",
+  desert: "bg-[var(--color-warning)]",
+  night: "bg-[var(--color-accent)]",
+  snow: "bg-[var(--color-bg-alt)]",
 };
 
 export default function ThemeSelector({ themes, selected, onSelect }: Props) {
@@ -29,12 +29,12 @@ export default function ThemeSelector({ themes, selected, onSelect }: Props) {
           onClick={() => onSelect(key)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
             selected === key
-              ? "bg-indigo-600 text-white"
-              : "bg-gray-900 text-gray-400 border border-gray-800 hover:border-gray-600 hover:text-gray-200"
+              ? "bg-[var(--color-primary)] text-[var(--color-primary-text)]"
+              : "bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text)]"
           }`}
           title={theme.description}
         >
-          <span className={`w-2.5 h-2.5 rounded-full ${COLORS[key] || "bg-gray-500"}`} />
+          <span className={`w-2.5 h-2.5 rounded-full ${COLORS[key] || "bg-[var(--color-text-faint)]"}`} />
           {theme.label}
         </button>
       ))}

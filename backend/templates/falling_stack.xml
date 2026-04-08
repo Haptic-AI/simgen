@@ -1,0 +1,63 @@
+<mujoco model="falling_stack">
+  <option gravity="0 0 -{{gravity}}" timestep="{{timestep}}"/>
+
+  <visual>
+    <global offwidth="640" offheight="480"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.05 0.07 0.1" rgb2="0.15 0.18 0.22" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.15 0.15 0.15" rgb2="0.2 0.2 0.2" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="8 8" reflectance="0.1"/>
+    <material name="block" rgba="0.3 0.5 0.9 0.9" specular="0.3" shininess="0.5"/>
+  </asset>
+
+  <default>
+    <geom friction="{{friction}} 0.005 0.001" solref="0.01 1"/>
+  </default>
+
+  <worldbody>
+    <light directional="true" diffuse="0.8 0.8 0.9" specular="0.3 0.3 0.3" pos="0 -2 3" dir="0 1 -1" castshadow="true"/>
+    <light directional="true" diffuse="0.3 0.3 0.4" pos="2 2 2" dir="-1 -1 -0.5" castshadow="false"/>
+
+    <geom name="floor" type="plane" size="5 5 0.1" material="grid"/>
+
+    <camera name="main" pos="1.5 -3 2" xyaxes="1 0 0 0 0.4 1" fovy="50"/>
+
+    <!-- Block 1 (bottom) -->
+    <body name="block1" pos="0 0 {{block_size}}">
+      <freejoint/>
+      <geom type="box" size="{{block_size}} {{block_size}} {{block_size}}" material="block" rgba="0.3 0.5 0.9 0.9" mass="{{block_mass}}"/>
+    </body>
+
+    <!-- Block 2 -->
+    <body name="block2" pos="{{offset}} 0 0.3">
+      <freejoint/>
+      <geom type="box" size="{{block_size}} {{block_size}} {{block_size}}" material="block" rgba="0.4 0.6 0.9 0.9" mass="{{block_mass}}"/>
+    </body>
+
+    <!-- Block 3 -->
+    <body name="block3" pos="-{{offset}} 0 0.5">
+      <freejoint/>
+      <geom type="box" size="{{block_size}} {{block_size}} {{block_size}}" material="block" rgba="0.5 0.4 0.9 0.9" mass="{{block_mass}}"/>
+    </body>
+
+    <!-- Block 4 -->
+    <body name="block4" pos="0 {{offset}} 0.7">
+      <freejoint/>
+      <geom type="box" size="{{block_size}} {{block_size}} {{block_size}}" material="block" rgba="0.9 0.4 0.3 0.9" mass="{{block_mass}}"/>
+    </body>
+
+    <!-- Block 5 (top) -->
+    <body name="block5" pos="0 0 0.9">
+      <freejoint/>
+      <geom type="box" size="{{block_size}} {{block_size}} {{block_size}}" material="block" rgba="0.9 0.6 0.2 0.9" mass="{{block_mass}}"/>
+    </body>
+
+    <!-- Block 6 -->
+    <body name="block6" pos="{{offset}} 0 1.1">
+      <freejoint/>
+      <geom type="box" size="{{block_size}} {{block_size}} {{block_size}}" material="block" rgba="0.3 0.8 0.5 0.9" mass="{{block_mass}}"/>
+    </body>
+  </worldbody>
+</mujoco>

@@ -276,6 +276,33 @@ def _render_passive(template_name: str, params: dict) -> list:
         if torso_id >= 0 and abs(full_params["push_force"]) > 0:
             data.xfrc_applied[torso_id, 0] = full_params["push_force"]
 
+    elif template_name == "double_pendulum":
+        h1 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "hinge1")
+        h2 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "hinge2")
+        if h1 >= 0:
+            data.qpos[model.jnt_qposadr[h1]] = full_params["initial_angle1"]
+        if h2 >= 0:
+            data.qpos[model.jnt_qposadr[h2]] = full_params["initial_angle2"]
+
+    elif template_name == "ragdoll":
+        torso_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "torso")
+        if torso_id >= 0 and abs(full_params.get("push_force", 0)) > 0:
+            data.xfrc_applied[torso_id, 0] = full_params["push_force"]
+
+    elif template_name == "spinning_top":
+        # Apply initial spin (angular velocity around z-axis) and tilt
+        root_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "root")
+        if root_id >= 0:
+            qpos_adr = model.jnt_qposadr[root_id]
+            qvel_adr = model.jnt_dofadr[root_id]
+            # Tilt the top slightly (quaternion rotation around x-axis)
+            tilt = full_params.get("tilt_angle", 0.15)
+            import math
+            data.qpos[qpos_adr + 3] = math.cos(tilt / 2)  # quat w
+            data.qpos[qpos_adr + 4] = math.sin(tilt / 2)  # quat x
+            # Apply spin angular velocity (around body z-axis)
+            data.qvel[qvel_adr + 5] = full_params["spin_speed"]
+
     mujoco.mj_forward(model, data)
 
     cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, "main")
@@ -290,7 +317,7 @@ def _render_passive(template_name: str, params: dict) -> list:
         for _ in range(steps_per_frame):
             mujoco.mj_step(model, data)
 
-        if template_name == "humanoid" and data.time > 0.5:
+        if template_name in ("humanoid", "ragdoll") and data.time > 0.5:
             torso_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "torso")
             if torso_id >= 0:
                 data.xfrc_applied[torso_id, :] = 0

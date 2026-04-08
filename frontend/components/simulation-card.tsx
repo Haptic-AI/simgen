@@ -24,14 +24,15 @@ export default function SimulationCard({ simulation, apiUrl, onFeedback, onVary,
 
   return (
     <div
-      className={`bg-gray-900 border rounded-lg overflow-hidden group transition-all ${
+      className={`bg-[var(--color-surface)] border rounded-[var(--radius-lg)] overflow-hidden group transition-all ${
         flowMode
-          ? "border-gray-800 hover:border-indigo-500 cursor-pointer hover:shadow-lg hover:shadow-indigo-500/10"
-          : "border-gray-800"
+          ? "border-[var(--color-border)] hover:border-[var(--color-primary)] cursor-pointer"
+          : "border-[var(--color-border)]"
       }`}
+      style={{ boxShadow: flowMode ? undefined : 'var(--shadow-sm)' }}
       onClick={flowMode && onVary ? () => onVary(simulation.id) : undefined}
     >
-      <div className="relative aspect-video bg-black">
+      <div className="relative aspect-video bg-[var(--color-accent)]">
         <video
           src={videoSrc}
           controls={!flowMode}
@@ -41,12 +42,12 @@ export default function SimulationCard({ simulation, apiUrl, onFeedback, onVary,
           playsInline
           className="w-full h-full object-contain"
         />
-        <div className="absolute top-2 left-2 bg-black/70 text-sm text-gray-300 px-2 py-1 rounded">
+        <div className="absolute top-2 left-2 bg-[var(--color-accent)]/80 text-sm text-white px-2 py-1 rounded-[var(--radius-sm)]">
           {simulation.label}
         </div>
         {flowMode && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-            <div className="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-lg">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--color-accent)]/30">
+            <div className="bg-[var(--color-primary)] text-[var(--color-primary-text)] text-sm font-medium px-4 py-2 rounded-[var(--radius-md)]" style={{ boxShadow: 'var(--shadow-md)' }}>
               Pick this one
             </div>
           </div>
@@ -54,7 +55,7 @@ export default function SimulationCard({ simulation, apiUrl, onFeedback, onVary,
         {!flowMode && onVary && (
           <button
             onClick={(e) => { e.stopPropagation(); onVary(simulation.id); }}
-            className="absolute top-2 right-2 bg-indigo-600/80 hover:bg-indigo-500 text-white text-sm px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 bg-[var(--color-primary)]/80 hover:bg-[var(--color-primary)] text-[var(--color-primary-text)] text-sm px-2.5 py-1 rounded-[var(--radius-sm)] opacity-0 group-hover:opacity-100 transition-opacity"
           >
             Iterate on this
           </button>
@@ -67,7 +68,7 @@ export default function SimulationCard({ simulation, apiUrl, onFeedback, onVary,
             <FeedbackButtons simulationId={simulation.id} apiUrl={apiUrl} onFeedback={onFeedback} />
             <button
               onClick={() => setShowParams(!showParams)}
-              className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+              className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
             >
               {showParams ? "Hide details" : "Technical details"}
             </button>
@@ -75,7 +76,7 @@ export default function SimulationCard({ simulation, apiUrl, onFeedback, onVary,
 
           {showParams && (
             <div className="px-3 pb-3">
-              <div className="bg-gray-950 rounded p-2 text-sm text-gray-400 font-mono space-y-0.5">
+              <div className="bg-[var(--color-bg-alt)] rounded-[var(--radius-sm)] p-2 text-sm text-[var(--color-text-muted)] font-mono space-y-0.5">
                 {Object.entries(simulation.params).map(([key, val]) => (
                   <div key={key}>
                     {key}: {typeof val === "number" ? val.toFixed(3) : String(val)}

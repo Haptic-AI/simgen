@@ -1,0 +1,40 @@
+<mujoco model="spinning_top">
+  <option gravity="0 0 -{{gravity}}" timestep="{{timestep}}"/>
+
+  <visual>
+    <global offwidth="640" offheight="480"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.05 0.07 0.1" rgb2="0.15 0.18 0.22" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.15 0.15 0.15" rgb2="0.2 0.2 0.2" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="8 8" reflectance="0.1"/>
+  </asset>
+
+  <worldbody>
+    <light directional="true" diffuse="0.8 0.8 0.9" specular="0.3 0.3 0.3" pos="0 -2 3" dir="0 1 -1" castshadow="true"/>
+    <light directional="true" diffuse="0.3 0.3 0.4" pos="2 2 2" dir="-1 -1 -0.5" castshadow="false"/>
+
+    <geom name="floor" type="plane" size="5 5 0.1" material="grid"/>
+
+    <camera name="main" pos="0.5 -1.5 0.8" xyaxes="1 0 0 0 0.3 1" fovy="50"/>
+
+    <!-- Spinning top body -->
+    <body name="top" pos="0 0 {{tip_height}}">
+      <freejoint name="root"/>
+
+      <!-- Tip (contact point) -->
+      <geom name="tip" type="sphere" size="0.01" pos="0 0 0" rgba="0.8 0.8 0.8 1" mass="0.01"/>
+
+      <!-- Main disc body -->
+      <geom name="disc" type="cylinder" size="{{disc_radius}} 0.015" pos="0 0 0.06" rgba="0.3 0.5 0.9 1" mass="{{mass}}"/>
+
+      <!-- Upper stem -->
+      <geom name="stem" type="capsule" fromto="0 0 0.075 0 0 0.18" size="0.008" rgba="0.6 0.6 0.7 1" mass="0.02"/>
+
+      <!-- Color rings on disc for visual spin feedback -->
+      <geom type="cylinder" size="{{disc_radius}} 0.003" pos="0.0 0.0 0.078" rgba="0.9 0.4 0.3 0.8" mass="0.001"/>
+      <geom type="box" size="{{disc_radius}} 0.005 0.005" pos="0 0 0.065" rgba="0.9 0.8 0.2 0.9" mass="0.001"/>
+    </body>
+  </worldbody>
+</mujoco>
